@@ -24,8 +24,16 @@ public class MyMetaObjectHandler implements MetaObjectHandler {
 
         metaObject.setValue("createTime", LocalDateTime.now());
         metaObject.setValue("updateTime", LocalDateTime.now());
-        metaObject.setValue("createUser", BaseContext.getCurrentId());
-        metaObject.setValue("updateUser", BaseContext.getCurrentId());
+
+        // 获取当前用户ID，如果为空则使用默认值1（管理员）
+        Long currentUserId = BaseContext.getCurrentId();
+        if (currentUserId == null) {
+            currentUserId = 1L; // 默认管理员ID
+            log.warn("当前用户ID为空，使用默认管理员ID: 1");
+        }
+
+        metaObject.setValue("createUser", currentUserId);
+        metaObject.setValue("updateUser", currentUserId);
     }
 
     /**
@@ -41,6 +49,14 @@ public class MyMetaObjectHandler implements MetaObjectHandler {
         log.info("线程id为：{}", id);
 
         metaObject.setValue("updateTime", LocalDateTime.now());
-        metaObject.setValue("updateUser", BaseContext.getCurrentId());
+
+        // 获取当前用户ID，如果为空则使用默认值1（管理员）
+        Long currentUserId = BaseContext.getCurrentId();
+        if (currentUserId == null) {
+            currentUserId = 1L; // 默认管理员ID
+            log.warn("当前用户ID为空，使用默认管理员ID: 1");
+        }
+
+        metaObject.setValue("updateUser", currentUserId);
     }
 }

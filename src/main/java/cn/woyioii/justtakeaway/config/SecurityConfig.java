@@ -21,7 +21,6 @@ import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
-import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 
 /**
  * Spring Security 安全配置类
@@ -57,8 +56,7 @@ public class SecurityConfig {
                     employee.getUsername(),
                     employee.getPassword(),
                     true, true, true, true,
-                    AuthorityUtils.createAuthorityList("ROLE_USER")
-            );
+                    AuthorityUtils.createAuthorityList("ROLE_USER"));
         };
     }
 
@@ -75,16 +73,36 @@ public class SecurityConfig {
      */
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
-        http  .headers(headers -> headers
-                        .frameOptions(HeadersConfigurer.FrameOptionsConfig::sameOrigin)) //  允许同源的 iframe 嵌套
-            .csrf(AbstractHttpConfigurer::disable) //  禁用 CSRF 保护
-            .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS)) //  禁用会话管理
-                    .authorizeHttpRequests(auth -> auth //  配置 URL 授权
-                .requestMatchers("/backend/**", "/front/**", "/employee/login", "/employee/logout").permitAll()
-                .anyRequest().authenticated() //  其他请求都需要认证
-            );
+        http.headers(headers -> headers
+                .frameOptions(HeadersConfigurer.FrameOptionsConfig::sameOrigin)) // 允许同源的 iframe 嵌套
+                .csrf(AbstractHttpConfigurer::disable) // 禁用 CSRF 保护
+                .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS)) // 禁用会话管理
+                .authorizeHttpRequests(auth -> auth // 配置 URL 授权
+                        .requestMatchers(
+                                "/backend/**",
+                                "/front/**",
+                                "/employee/**",
+                                "/employee",
+                                "/category/**",
+                                "/category",
+                                "/dish/**",
+                                "/dish",
+                                "/setmeal/**",
+                                "/setmeal",
+                                "/common/**",
+                                "/common",
+                                "/user/**",
+                                "/user",
+                                "/addressBook/**",
+                                "/addressBook",
+                                "/shoppingCart/**",
+                                "/shoppingCart",
+                                "/order/**",
+                                "/order")
+                        .permitAll()
+                        .anyRequest().authenticated() // 其他请求都需要认证
+                );
 
         return http.build();
     }
 }
-

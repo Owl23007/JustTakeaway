@@ -1,6 +1,7 @@
 package cn.woyioii.justtakeaway.controller;
 
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
+import cn.woyioii.justtakeaway.common.BaseContext;
 import cn.woyioii.justtakeaway.common.R;
 import cn.woyioii.justtakeaway.entity.Employee;
 import cn.woyioii.justtakeaway.service.EmployeeService;
@@ -36,6 +37,7 @@ public class EmployeeController {
 
     /**
      * 员工登录
+     * 
      * @param employee 包含用户名和密码的员工实体对象，用于验证用户身份。
      * @return 返回 R<Employee> 类型结果，包含登录成功后的员工信息或错误提示。
      */
@@ -80,12 +82,10 @@ public class EmployeeController {
         }
 
         // 创建认证令牌并设置到上下文
-        UsernamePasswordAuthenticationToken authentication =
-                new UsernamePasswordAuthenticationToken(
-                        emp.getUsername(),
-                        null,
-                        Collections.singletonList(new SimpleGrantedAuthority("ROLE_USER"))
-                );
+        UsernamePasswordAuthenticationToken authentication = new UsernamePasswordAuthenticationToken(
+                emp.getUsername(),
+                null,
+                Collections.singletonList(new SimpleGrantedAuthority("ROLE_USER")));
         SecurityContextHolder.getContext().setAuthentication(authentication);
 
         // 存储员工 ID 到 session 中
@@ -100,6 +100,7 @@ public class EmployeeController {
 
     /**
      * 员工退出
+     * 
      * @return 返回 R<String> 类型结果，包含退出成功提示信息。
      */
     @PostMapping("/logout")
@@ -112,58 +113,94 @@ public class EmployeeController {
     /**
      * 新增员工
      *
-     * @param request HttpServletRequest 对象，用于获取当前登录用户的信息。
+     * @param request  HttpServletRequest 对象，用于获取当前登录用户的信息。
      * @param employee 包含员工信息的实体对象，需设置密码、创建时间、更新人等。
      * @return 返回 R<String> 类型结果，包含新增成功提示信息。
      */
-
     @PostMapping
-    public R<String> save(HttpServletRequest request,@RequestBody Employee employee) {
+    public R<String> save(HttpServletRequest request, @RequestBody Employee employee) {
         log.info("新增员工，员工信息：{}", employee);
 
+        // 参数验证
+        if (employee.getUsername() == null || employee.getUsername().trim().isEmpty()) {
+            return R.error("用户名不能为空");
+        }
+        if (employee.getName() == null || employee.getName().trim().isEmpty()) {
+            return R.error("员工姓名不能为空");
+        }
+
+        // 检查用户名是否已存在
+        LambdaQueryWrapper<Employee> queryWrapper = new LambdaQueryWrapper<>();
+        queryWrapper.eq(Employee::getUsername, employee.getUsername());
+        Employee existingEmployee = employeeService.getOne(queryWrapper);
+        if (existingEmployee != null) {
+            return R.error("用户名已存在");
+        }
+
         Employee currentEmployee = getCurrentEmployee(request);
-        if (currentEmployee == null) {
-            return R.error("未登录或登录已过期或当前登录用户信息不存在");
+        if (currentEmployee != null) {
+            // 如果有当前登录用户，设置到BaseContext中
+            BaseContext.setCurrentId(currentEmployee.getId());
         }
 
         // 设置默认密码
         employee.setPassword(passwordEncoder.encode("123456"));
         // 设置启用状态
         employee.setStatus(1);
-        // 设置创建和更新信息
-        LocalDateTime now = LocalDateTime.now();
-        employee.setCreateTime(now);
-        employee.setUpdateTime(now);
-        employee.setCreateUser(currentEmployee.getId());
-        employee.setUpdateUser(currentEmployee.getId());
 
-        employeeService.save(employee);
+        // 处理必填字段的默认值
+        if (employee.getIdNumber() == null || employee.getIdNumber().trim().isEmpty()) {
+            employee.setIdNumber("000000000000000000"); // 默认身份证号
+        }
+        if (employee.getPhone() == null || employee.getPhone().trim().isEmpty()) {
+            employee.setPhone("13800000000"); // 默认手机号
+        }
+        if (employee.getSex() == null || employee.getSex().trim().isEmpty()) {
+            employee.setSex("男"); // 默认性别
+        }
+
+        // 性别值标准化处理：将数字转换为中文
+        if ("1".equals(employee.getSex())) {
+            employee.setSex("男");
+        } else if ("0".equals(employee.getSex())) {
+            employee.setSex("女");
+        }
+
+        try {
+            employeeService.save(employee);
+            log.info("员工 {} 新增成功，ID: {}", employee.getName(), employee.getId());
+        } catch (Exception e) {
+            log.error("新增员工失败：{}", e.getMessage(), e);
+            return R.error("新增员工失败：" + e.getMessage());
+        }
 
         return R.success("新增员工成功");
     }
+
     /**
      * 员工信息分页查询
-     * @param page 当前页码
+     * 
+     * @param page     当前页码
      * @param pageSize 每页显示的记录数
-     * @param name 员工姓名，用于模糊查询
+     * @param name     员工姓名，用于模糊查询
      * @return 返回 R<Page> 类型结果，包含分页查询结果
      */
     @GetMapping("/page")
-     public R<Page<Employee>> page(int page, int pageSize, String name){
-        log.info("page = {},pageSize = {},name = {}" ,page,pageSize,name);
+    public R<Page<Employee>> page(int page, int pageSize, String name) {
+        log.info("page = {},pageSize = {},name = {}", page, pageSize, name);
 
-        //构造分页构造器
-        Page<Employee> pageInfo = new Page<>(page,pageSize);
+        // 构造分页构造器
+        Page<Employee> pageInfo = new Page<>(page, pageSize);
 
-        //构造条件构造器
+        // 构造条件构造器
         LambdaQueryWrapper<Employee> queryWrapper = new LambdaQueryWrapper<>();
-        //添加过滤条件
-        queryWrapper.like(StringUtils.isNotEmpty(name),Employee::getName,name);
-        //添加排序条件
+        // 添加过滤条件
+        queryWrapper.like(StringUtils.isNotEmpty(name), Employee::getName, name);
+        // 添加排序条件
         queryWrapper.orderByDesc(Employee::getUpdateTime);
 
-        //执行查询
-        employeeService.page(pageInfo,queryWrapper);
+        // 执行查询
+        employeeService.page(pageInfo, queryWrapper);
 
         return R.success(pageInfo);
     }
@@ -171,12 +208,12 @@ public class EmployeeController {
     /**
      * 修改员工信息
      *
-     * @param request HttpServletRequest 对象，用于获取当前登录用户的信息。
+     * @param request  HttpServletRequest 对象，用于获取当前登录用户的信息。
      * @param employee 包含员工信息的实体对象，需设置更新时间、更新人等。
      * @return 返回 R<String> 类型结果，包含修改成功提示信息。
      */
     @PutMapping
-    public R<String> update(HttpServletRequest request,@RequestBody Employee employee) {
+    public R<String> update(HttpServletRequest request, @RequestBody Employee employee) {
         log.info(employee.toString());
 
         Employee currentEmployee = getCurrentEmployee(request);
@@ -195,14 +232,15 @@ public class EmployeeController {
 
     /**
      * 根据id查询员工信息
+     * 
      * @param id 员工ID，用于查询对应的员工信息。
      * @return 返回 R<Employee> 类型结果，包含查询到的员工信息。
      */
     @GetMapping("/{id}")
-    public R<Employee> getById(@PathVariable Long id){
+    public R<Employee> getById(@PathVariable Long id) {
         log.info("根据id查询员工信息...");
         Employee employee = employeeService.getById(id);
-        if(employee != null){
+        if (employee != null) {
             return R.success(employee);
         }
         return R.error("没有查询到对应员工信息");

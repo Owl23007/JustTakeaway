@@ -190,9 +190,9 @@ CREATE TABLE `order_detail` (
   PRIMARY KEY (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci COMMENT='订单明细表';
 
--- 插入初始管理员账户 (密码: admin123)
+-- 插入初始管理员账户 (密码: 123456)
 INSERT INTO `employee` (id, name, username, password, phone, sex, id_number, status, create_time, update_time, create_user, update_user) 
-VALUES (1, '管理员', 'admin', '$2a$10$oLsHiKbAW6Bd4SjQJ9kv3.xhWpcUJUb7d5bfz1N4rI8jBKC5K4n8G', '13888888888', '1', '110101199001011234', 1, NOW(), NOW(), 1, 1);
+VALUES (1, '管理员', 'admin', '$2a$10$KFI17IV76BhQXNsdo7S/Guw.fcjcN11izgeF5edUkqdMIV118QZ1q', '13888888888', '1', '110101199001011234', 1, NOW(), NOW(), 1, 1);
 
 -- 插入基础分类数据
 INSERT INTO `category` (id, type, name, sort, create_time, update_time, create_user, update_user) VALUES
