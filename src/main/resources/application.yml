@@ -1,0 +1,26 @@
+server:
+  port: 8080
+
+spring:
+  application:
+    name: JustTakeaway
+  datasource:
+    driver-class-name: com.mysql.cj.jdbc.Driver
+    url: jdbc:mysql://localhost:3306/takeaway?serverTimezone=Asia/Shanghai&useUnicode=true&characterEncoding=utf-8&zeroDateTimeBehavior=convertToNull&useSSL=false&allowPublicKeyRetrieval=true
+    username: root
+    password: W123456
+
+jwt:
+  secret: sZ9Ycd/KOHMAXFah3cubv8hegWWF3uYh8dNx3+JA7ZBAGxiTut28nquznBnP7R8AlJT2B1bcbh56TDeDmeGScw== # JWT密钥，可通过环境变量JWT_SECRET覆盖
+  expiration: 86400000 # JWT令牌有效期，默认24小时
+
+mybatis-plus:
+  configuration:
+    map-underscore-to-camel-case: true
+    log-impl: org.apache.ibatis.logging.slf4j.Slf4jImpl
+  global-config:
+    db-config:
+      id-type: ASSIGN_ID
+
+justtakeaway:
+  path: D:\img\
