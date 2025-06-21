@@ -8,10 +8,10 @@ spring:
     driver-class-name: com.mysql.cj.jdbc.Driver
     url: jdbc:mysql://localhost:3306/takeaway?serverTimezone=Asia/Shanghai&useUnicode=true&characterEncoding=utf-8&zeroDateTimeBehavior=convertToNull&useSSL=false&allowPublicKeyRetrieval=true
     username: root
-    password: W123456
+    password: ${DB_PASSWORD:your_database_password}
 
 jwt:
-  secret: sZ9Ycd/KOHMAXFah3cubv8hegWWF3uYh8dNx3+JA7ZBAGxiTut28nquznBnP7R8AlJT2B1bcbh56TDeDmeGScw== # JWT密钥，可通过环境变量JWT_SECRET覆盖
+  secret: ${JWT_SECRET:your_jwt_secret_key_here} # JWT密钥，请使用环境变量JWT_SECRET覆盖
   expiration: 86400000 # JWT令牌有效期，默认24小时
 
 mybatis-plus:
@@ -23,4 +23,4 @@ mybatis-plus:
       id-type: ASSIGN_ID
 
 justtakeaway:
-  path: D:\img\
+  path: ${UPLOAD_PATH:D:\\img\\}
