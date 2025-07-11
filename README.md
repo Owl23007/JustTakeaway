@@ -2,7 +2,7 @@
 
 ## 项目简介
 
-JustTakeaway 是一个基于 Spring Boot 3.5 和 Java 21 开发的现代化外卖订餐系统，提供完整的餐厅管理和用户订餐功能。
+JustTakeaway 是一个基于 Spring Boot 3.5 和 Java 21 开发的现代化外卖订餐系统，基于黑马程序员的瑞吉外卖项目。
 
 ## 技术栈
 
